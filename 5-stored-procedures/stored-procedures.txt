@@ -1,0 +1,85 @@
+﻿--Considere o schema Sales History (SH) 
+--do Oracle. Crie as tabelas conforme comandos 
+--abaixo e implemente as stored procedures 
+--que são solicitadas a seguir:
+
+--Comandos para criação de tabelas 
+--do schema Order Entry (OE):
+
+create table customers as 
+select * from SH.customers 
+WHERE NUM_ROWS = 200;
+
+create table produtos as
+select * from SH.products;
+
+create table countries as
+select * from SH.countries;
+
+--1) Procedure: Registrar Novo Cliente
+--Descrição: Crie uma procedure 
+--chamada ADD_CUSTOMER que receba 
+--como parâmetros os campos 
+--que são obrigatórios na tabela 
+--e insira um novo cliente 
+--na tabela CUSTOMERS.
+
+--Objetivo: Praticar INSERT,
+--parâmetros de entrada 
+--e tratamento de erros.
+
+--2) Procedure: Atualizar Status de Produto
+--Descrição: Crie uma procedure 
+--chamada UPDATE_PRODUCT_STATUS 
+--que atualize o status de um produto 
+--com base no seu PROD_ID. 
+--Receba o novo status como parâmetro.
+--O status pode ser: 
+--Disponível ou Indisponível 
+--ou Fora de produção.
+
+--Objetivo: Praticar UPDATE, 
+--uso de parâmetros e controle condicional.
+
+--3) Function: Obter Nome Completo 
+--do Cliente
+--Descrição: Crie uma function chamada 
+--GET_CUSTOMER_NAME que receba 
+--um CUSTOMER_ID e retorne o nome completo 
+--do cliente.
+
+--Objetivo: Praticar uso simples 
+--de SELECT INTO e retorno de VARCHAR.
+
+--4) Procedure: Obter lista de clientes 
+--de um país
+--Descrição: Crie uma procedure chamada
+-- GET_CUSTOMER_PER_COUNTRY que receba 
+--um COUNTRY_ID e retorne uma lista 
+--com o nome completo dos clientes, e-mail,
+-- gênero e o endereço completo concatenando
+-- os campos CUST_STREET_ADDRESS, 
+--CUST_POSTAL_CODE, CUST_CITY, CUST_CITY_ID
+-- e CUST_STATE_PROVINCE.
+
+--Objetivo: Praticar uso de SELECT 
+--com cursor e retorno de lista
+--com funções internas do Oracle.
+
+--5) Procedure: Obter relatório 
+--de vendas por cliente em 
+--determinado período.
+--Descrição: Crie uma procedure 
+--chamada SALES_REPORT que receba 
+--como parâmetro um período de datas 
+--(data de início e de fim) 
+--e retorne uma lista com o nome completo 
+--dos clientes e o total gasto por eles
+-- neste período 
+-- (somar os valores do campo AMOUNT_SOLD).
+
+--Objetivo: Praticar uso de SELECT 
+--com cursor e retorno de lista com funções 
+--internas do Oracle.
+
+
