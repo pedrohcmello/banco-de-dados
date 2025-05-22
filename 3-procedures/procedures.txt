@@ -1,0 +1,70 @@
+﻿-- 1. Criar uma procedure que receba um código 
+--de pessoa como parâmetro de entrada 
+--e através de um parâmetro de saída 
+--retorne o nome da pessoa. 
+--Caso, o código seja inexistente, 
+--retorne: Pessoa não encontrada. 
+
+--Execute o script abaixo para criar a tabela e inserir dados para testes.
+
+CREATE TABLE PESSOA(
+ID NUMBER(4) PRIMARY KEY,
+NOME VARCHAR2(120) NOT NULL,
+CONSTRAINT UQ_NOME_PESSOA UNIQUE (NOME)
+);
+INSERT INTO PESSOA (ID, NOME) VALUES (1, 'João Silva');
+INSERT INTO PESSOA (ID, NOME) VALUES (2, 'Maria Silva');
+INSERT INTO PESSOA (ID, NOME) VALUES (3, 'Claudia Souza');
+INSERT INTO PESSOA (ID, NOME) VALUES (4, 'Jurema Paschoal');
+INSERT INTO PESSOA (ID, NOME) VALUES (5, 'André Paulo');
+COMMIT;
+
+-- 2. Criar uma procedure que retorne a tabuada de um determinado número no intervalo de 1 a 10.
+
+-- 3. Criar uma procedure que apresente os anos bissextos entre 2000 e 2100. Um ano será bissexto quando for possível dividi-lo por 4, mas não por 100 OU quando for possível dividi-lo por 400.
+
+-- 4. Criar uma procedure que receberá o número de matrícula, o nome do aluno e quatro notas (NR_MATRICULA, NOME, A1, A2, A3, A4). A partir destes valores, deverá efetuar o cálculo da média aritmética. Se a média for menor que 6, o aluno estará REPROVADO. Se a média for igual ou superior a 6, o aluno estará APROVADO. A procedure deverá inserir os valores acima numa tabela denominada ALUNO que deverá ter os seguintes atributos: NR_MATRICULA, NOME, A1, A2, A3, A4, MEDIA, RESULTADO. As notas poderão ser valores decimais. Execute o script abaixo para auxiliar na criação de sua procedure.
+CREATE TABLE ALUNO(
+ NR_MATRICULA NUMBER,
+ NOME VARCHAR2(50),
+ A1 NUMBER,
+ A2 NUMBER,
+ A3 NUMBER,
+ A4 NUMBER,
+ MEDIA NUMBER,
+ RESULTADO VARCHAR2(30));
+
+ INSERT INTO ALUNO (NR_MATRICULA, NOME, A1, A2, A3, A4)
+ VALUES(123, 'DANIELA', 10, 9, 8, 7);
+ INSERT INTO ALUNO (NR_MATRICULA, NOME, A1, A2, A3, A4)
+VALUES(234, 'EDUARDO', 8, 6, 5, 3);
+INSERT INTO ALUNO (NR_MATRICULA, NOME, A1, A2, A3, A4)VALUES(345, 'MARIA', 5, 8, 3, 7);
+ INSERT INTO ALUNO (NR_MATRICULA, NOME, A1, A2, A3, A4) VALUES(456, 'JOÃO', 4, 6, 4, 7);
+
+-- 5. Uma empresa oferece um bônus 
+-- a seus funcionários 
+--com base no lucro líquido (tabela LUCRO) 
+--obtido durante o ano e no valor do salário 
+--do funcionário (tabela SALARIO). 
+--O bônus é calculado conforme a seguinte fórmula: 
+--bonus = lucro*0.01 + salario*0.05. 
+
+--Crie uma procedure que receba o ano (tabela LUCRO) e o número de matrícula do funcionário e devolva (imprima) o valor do seu respectivo bônus. Execute o script abaixo para criar as tabelas necessárias.
+
+CREATE TABLE LUCRO(
+ANO NUMBER(4) NOT NULL,
+VALOR NUMBER(10,2));
+INSERT INTO LUCRO VALUES (‘2017’, 1200000);
+INSERT INTO LUCRO VALUES (‘2018’, 1500000);
+INSERT INTO LUCRO VALUES (‘2019’, 1400000);
+INSERT INTO LUCRO VALUES (‘2020’, 1700000);
+
+CREATE TABLE SALARIO (
+MATRICULA NUMBER(4) NOT NULL,
+SALARIO NUMBER(7,2) NOT NULL);
+
+INSERT INTO SALARIO VALUES (1001, 2500); 
+INSERT INTO SALARIO VALUES (1002, 3500);
+INSERT INTO SALARIO VALUES (1003, 320);
+INSERT INTO SALARIO VALUES (1004, 2700);
+INSERT INTO SALARIO VALUES (1005, 4500);
