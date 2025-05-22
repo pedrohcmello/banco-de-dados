@@ -1,0 +1,55 @@
+﻿--Parte I - Implemente o que se pede a seguir:
+
+--1.Criar uma função que deverá receber 
+--um valor correspondente à temperatura 
+--em graus Fahrenheit e retornar 
+--o equivalente em graus Celsius. 
+
+--A fórmula para conversão é: C = (F-32)/1.8
+
+--2.Criar uma função que deverá receber 
+--o número de matrícula de um funcionário 
+--e retornar seu nome e o nome de seu departamento. 
+--Considere as tabelas employees e departments do esquema HR
+ --do LiveSQL e faça uma cópia de cada uma delas 
+ --para que você possa criar a sua função 
+ --(conforme script abaixo).
+ --Script :
+--create table funcionarios as select * from hr.employees;
+--create table departamentos as select * from hr.departments;
+
+
+--Parte II - Considere o schema HR do LiveSQL 
+--para criar em seu schema uma cópia das tabelas employees 
+--e departments. Em seu schema, crie os seguintes objetos:
+
+--Criar:
+--1.função para obter o nome completo do funcionário
+-- (fisrt_name concatenado ao last_name) 
+-- passando o employee_id como parâmetro da função;
+
+--2.função para obter o salário do funcionário 
+--passando o employee_id como parâmetro da função;
+
+--3.função para obter o nome completo do funcionário 
+--que trabalha em um determinado departamento.
+-- Mostre também o nome deste departamento. 
+-- Passe o department_id como parâmetro.
+
+--4.função para obter o valor total da folha de pagamento
+-- (soma de salários) dos funcionários da empresa.
+
+--5.função que aplique um aumento de 10% 
+--no salário dos funcionários de um determinado 
+--departamento e retorne como resultado da função 
+-- o novo total de salário deste departamento. 
+-- Passe o department_id como parâmetro.
+
+--6.procedimento que imprima uma listagem 
+--dos funcionários com os seguintes dados:
+--nome completo do funcionário, data de contratação (hire_date), 
+--número de telefone, e-mail, nome do gerente, 
+--nome do departamento, salário e percentual de comissão.
+
+--Dica: você precisará fazer uma junção da tabela 
+--funcionarios com ela mesma para obter o nome do gerente.
