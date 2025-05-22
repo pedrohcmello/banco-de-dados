@@ -1,0 +1,112 @@
+﻿--Módulo 02 - Atividade 6 - 
+--Uso de packages PL/SQL
+
+--Bom trabalho!
+
+--1. Assinale V para Verdadeiro e F para Falso nas seguintes afirmativas:
+
+--( ) Um package pode ter duas partes sendo
+-- uma delas para declaração de variáveis, 
+-- constantes, exceções, cursores 
+-- e subprogramas (funções e procedimentos) 
+-- e a outra parte para definição 
+-- dos subprogramas.
+
+--( ) Um package pode ser usado por muitas
+-- aplicações.
+
+--( ) A spec de um package é pública 
+--sendo acessível pelas aplicações.
+
+--( ) Não podemos ter variáveis globais 
+--em um package, somente variáveis de uso 
+--local.
+
+--( ) Em um schema de banco de dados Oracle,
+-- é possível definir quantos packages 
+--forem necessários.
+
+--( ) Com os packages, podemos especificar
+-- quais tipos, itens e sub-programas 
+--serão públicos (visíveis e acessíveis) 
+--ou privados (escondido e inacessível).
+
+--( ) A especificação do package 
+--comporta-se como uma API.
+
+--2. Quais itens públicos necessitam 
+--ser registrados no corpo do pacote? 
+--Assinale a afirmativa correta:
+
+--.Procedures e functions
+--.Procedures, functions e exceções
+--.Procedures, functions e constantes
+
+--3. Referente ao cabeçalho e ao corpo 
+--do pacote, selecione a alternativa 
+--correta:
+
+--Quando atualizamos um dado no corpo
+--do pacote, precisamos refazer 
+--a declaração do cabeçalho.
+
+--Depois de criado, não podemos alterar
+--o corpo e o cabeçalho do pacote.
+--Quando atualizamos um dado no corpo, 
+--não precisamos refazer a declaração 
+--do cabeçalho, pois o corpo pode ser 
+--modificado sem a necessidade de mudar
+--o código do cabeçalho.
+
+--4. Considere o schema HR do LiveSQL
+-- para criar em seu schema uma 
+--cópia das tabelas employees e departments.
+-- Em seu schema, estas tabelas deverão 
+--se chamar funcionarios e departamentos.
+-- Em seu schema, crie os seguintes objetos:
+
+--Pacote com interface (spec) e body 
+--que seja denominado pckFuncionarios;
+
+--No pacote criado, defina as seguintes
+--funções ou procedimentos:
+
+--função para obter o nome completo 
+--do funcionário (fisrt_name concatenado 
+--ao last_name) passando o employee_id 
+--como parâmetro da função;
+
+--função para obter o salário do 
+--funcionário passando o employee_id 
+--como parâmetro da função;
+
+--procedimento para obter o nome completo
+--do funcionário que trabalha em um 
+--determinado departamento. 
+--Mostre também o nome deste departamento.
+--Passe o department_id como parâmetro.
+
+--função para obter o valor total da folha
+--de pagamento (soma de salários) 
+--dos funcionários da empresa.
+
+--procedimento que aplique um aumento
+-- de 10% no salário dos funcionários 
+--de um determinado departamento. 
+--Passe o department_id como parâmetro.
+
+--procedimento que imprima uma listagem 
+--dos funcionários com os seguintes dados: 
+--nome completo do funcionário, 
+--data de contratação (hire_date), 
+--número de telefone, e-mail, 
+--nome do gerente, nome do departamento, 
+--salário e percentual de comissão. 
+
+--Dica: você precisará fazer uma 
+--junção da tabela funcionarios com
+-- ela mesma para obter o nome do gerente.
+
+--Respostas da questão 4 
+--(cole aqui os comandos que você
+-- executou no LiveSQL):
