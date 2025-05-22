@@ -1,0 +1,162 @@
+﻿--PROBLEMA 1
+--1) Executar o comando abaixo e explicar o que ele faz:
+DECLARE
+   a number;
+   b number;
+   c number;
+
+PROCEDURE valorMinimo(x IN number, y IN number, z OUT number) IS
+BEGIN
+   IF x < y THEN
+      z:= x;
+   ELSE
+      z:= y;
+   END IF;
+END;
+
+BEGIN
+   a:= 23;
+   b:= 45;
+   valorMinimo(a, b, c);
+   dbms_output.put_line('O valor mínimo obtido entre os valores ' || a  || ' e ' || b || ' foi ' || c);
+END;
+
+
+Resposta : 
+
+
+
+--2) Você conseguiria fazer um comando semelhante, 
+--mas agora para identificar o valor máximo 
+--e o valor médio?
+
+Maior : 
+
+BEGIN
+  
+END;
+
+Médio (caso se refira a um valor médio)
+
+A montagem da PROCEDURE precisaria incluir 4 parâmetros em vez de 3.
+Valor médio nesse sentido é o valor distinto do máximo e mínimo, o qual está numericamente entre ambos.
+BEGIN
+   
+END;
+
+--PROBLEMA 2
+--1) Criar a seguinte tabela:
+CREATE TABLE CIDADES
+(
+  COD_CIDADE  INTEGER NOT NULL,
+  NOME        VARCHAR2(100 BYTE),
+  UF          CHAR(2 BYTE)
+);
+
+--2) Executar o comando abaixo:
+CREATE OR REPLACE PROCEDURE "SP_CIDADES" (
+	vCOD_CIDADE  INTEGER,
+	vNOME       VARCHAR2,
+	vUF         CHAR,
+	vOPR        CHAR)
+IS
+	vEXCEPTION EXCEPTION;
+BEGIN
+  IF (vOPR = 'I') THEN
+	INSERT INTO CIDADES(COD_CIDADE, NOME, UF)
+	VALUES (vCOD_CIDADE, vNOME, vUF);
+  ELSE
+
+  IF(vOPR = 'A') THEN
+    UPDATE CIDADES
+    SET NOME = vNOME, UF = vUF WHERE COD_CIDADE = vCOD_CIDADE;
+  
+  ELSE
+    IF(vOPR = 'D')THEN
+      DELETE FROM CIDADES WHERE COD_CIDADE = vCOD_CIDADE;
+    ELSE
+      RAISE vEXCEPTION;
+    END IF;
+  END IF;
+END IF;
+EXCEPTION
+  WHEN vEXCEPTION THEN
+   RAISE_APPLICATION_ERROR(-20999,'ATENÇÃO! Operação diferente de Inserçao, Deleção ou Atualização.', FALSE);
+END SP_CIDADES;
+
+--3) Para observar os resultados, 
+--execute o comando abaixo:
+EXEC SP_CIDADES(1, ‘GASPAR’, ‘SC’, ‘I’);
+
+
+Parece que a versão atual do live oracle sql exige 
+uma sintaxe diferente para o delimitador ‘ , 
+em um parâmetro de uma procedure em um comando EXEC .
+
+--4) Tente executar o mesmo comando anterior sem informar
+ --algum dado ou informando tipos de dados diferentes. 
+ --Relate o que acontece.
+
+
+--PROBLEMA 3
+--1) Criar a seguinte tabela e explicar o que aconteceu:
+create table funcionarios as select * from hr.employees;
+
+--2) Executar o comando abaixo:
+
+CREATE OR REPLACE PROCEDURE detalhes_dos_funcionarios
+IS
+  CURSOR emp_cur IS
+    SELECT first_name, last_name, salary
+    FROM funcionarios;
+  emp_rec emp_cur%rowtype;
+BEGIN
+  FOR emp_rec in emp_cur LOOP
+    dbms_output.put_line('Nome do funcionário: ' || emp_rec.first_name ||
+     '. Sobrenome do funcionário: ' ||emp_rec.last_name ||
+     '. Salário do funcionário: ' ||emp_rec.salary);
+  END LOOP;
+END;
+
+
+
+
+--3) Para observar os resultados, execute o comando abaixo e explique o que o comando fez:
+exec detalhes_dos_funcionarios;
+
+ERRO : 
+
+--PROBLEMA 4
+--1) Executar o comando abaixo:
+CREATE OR REPLACE FUNCTION PRIMO (NUMERO NUMBER) 
+RETURN VARCHAR2
+IS
+  VSQRT NUMBER(4);
+  VDIV NUMBER(4);
+  VRESULT VARCHAR(20):='É PRIMO';
+  
+BEGIN
+      --RAIZ QUADRADA DO NUMERO
+      VSQRT := SQRT(NUMERO);
+      
+      FOR I IN 2..VSQRT LOOP
+        IF(MOD(NUMERO,I)=0 AND NUMERO<>I)THEN
+          VRESULT := 'NÃO É PRIMO';
+        END IF;
+      END LOOP;
+      RETURN VRESULT;
+END;
+
+--2) Para observar os resultados, 
+--execute o comando abaixo e explique o que o comando fez:
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(PRIMO(4));
+END;
+
+
+--3) Consegue perceber a diferença do tipo de comando deste problema se comparado aos problemas 2 e 3? Explique. 
+Diferença : Na questão 3, era uma PROCEDURE que retorna dados, e não necessita de parâmetros. Enquanto na questão 2 era uma PROCEDURE que necessita de parâmetros e retorna um valor.
+
+
+
+Tive uma leve dificuldade em entender essa questão. 
