@@ -1,70 +1,130 @@
-﻿-- 1. Criar uma procedure que receba um código 
---de pessoa como parâmetro de entrada 
---e através de um parâmetro de saída 
---retorne o nome da pessoa. 
---Caso, o código seja inexistente, 
---retorne: Pessoa não encontrada. 
+﻿-- Questão 1)
+CREATE OR REPLACE PROCEDURE obter_nome_pessoa(
+  p_id IN NUMBER,
+  p_nome OUT VARCHAR2
+)
+IS
+BEGIN
+  SELECT nome INTO p_nome
+  FROM pessoa
+  WHERE id = p_id;
 
---Execute o script abaixo para criar a tabela e inserir dados para testes.
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    p_nome := 'Pessoa não encontrada';
+END;
+/
 
-CREATE TABLE PESSOA(
-ID NUMBER(4) PRIMARY KEY,
-NOME VARCHAR2(120) NOT NULL,
-CONSTRAINT UQ_NOME_PESSOA UNIQUE (NOME)
-);
-INSERT INTO PESSOA (ID, NOME) VALUES (1, 'João Silva');
-INSERT INTO PESSOA (ID, NOME) VALUES (2, 'Maria Silva');
-INSERT INTO PESSOA (ID, NOME) VALUES (3, 'Claudia Souza');
-INSERT INTO PESSOA (ID, NOME) VALUES (4, 'Jurema Paschoal');
-INSERT INTO PESSOA (ID, NOME) VALUES (5, 'André Paulo');
-COMMIT;
+-- Execução:
+DECLARE
+  v_nome VARCHAR2(120);
+BEGIN
+  obter_nome_pessoa(2, v_nome);
+  DBMS_OUTPUT.PUT_LINE('Resultado: ' || v_nome);
+END;
+/
 
--- 2. Criar uma procedure que retorne a tabuada de um determinado número no intervalo de 1 a 10.
+-- Questão 2)
+CREATE OR REPLACE PROCEDURE tabuada(p_numero IN NUMBER)
+IS
+BEGIN
+  FOR i IN 1..10 LOOP
+    DBMS_OUTPUT.PUT_LINE(p_numero || ' x ' || i || ' = ' || (p_numero * i));
+  END LOOP;
+END;
+/
 
--- 3. Criar uma procedure que apresente os anos bissextos entre 2000 e 2100. Um ano será bissexto quando for possível dividi-lo por 4, mas não por 100 OU quando for possível dividi-lo por 400.
+-- Execução:
+BEGIN
+  tabuada(7);
+END;
+/
 
--- 4. Criar uma procedure que receberá o número de matrícula, o nome do aluno e quatro notas (NR_MATRICULA, NOME, A1, A2, A3, A4). A partir destes valores, deverá efetuar o cálculo da média aritmética. Se a média for menor que 6, o aluno estará REPROVADO. Se a média for igual ou superior a 6, o aluno estará APROVADO. A procedure deverá inserir os valores acima numa tabela denominada ALUNO que deverá ter os seguintes atributos: NR_MATRICULA, NOME, A1, A2, A3, A4, MEDIA, RESULTADO. As notas poderão ser valores decimais. Execute o script abaixo para auxiliar na criação de sua procedure.
-CREATE TABLE ALUNO(
- NR_MATRICULA NUMBER,
- NOME VARCHAR2(50),
- A1 NUMBER,
- A2 NUMBER,
- A3 NUMBER,
- A4 NUMBER,
- MEDIA NUMBER,
- RESULTADO VARCHAR2(30));
 
- INSERT INTO ALUNO (NR_MATRICULA, NOME, A1, A2, A3, A4)
- VALUES(123, 'DANIELA', 10, 9, 8, 7);
- INSERT INTO ALUNO (NR_MATRICULA, NOME, A1, A2, A3, A4)
-VALUES(234, 'EDUARDO', 8, 6, 5, 3);
-INSERT INTO ALUNO (NR_MATRICULA, NOME, A1, A2, A3, A4)VALUES(345, 'MARIA', 5, 8, 3, 7);
- INSERT INTO ALUNO (NR_MATRICULA, NOME, A1, A2, A3, A4) VALUES(456, 'JOÃO', 4, 6, 4, 7);
+-- Questão 3)
+CREATE OR REPLACE PROCEDURE anos_bissextos
+IS
+BEGIN
+  FOR ano IN 2000..2100 LOOP
+    IF (MOD(ano, 4) = 0 AND MOD(ano, 100) != 0) OR (MOD(ano, 400) = 0) THEN
+      DBMS_OUTPUT.PUT_LINE('Ano bissexto: ' || ano);
+    END IF;
+  END LOOP;
+END;
+/
 
--- 5. Uma empresa oferece um bônus 
--- a seus funcionários 
---com base no lucro líquido (tabela LUCRO) 
---obtido durante o ano e no valor do salário 
---do funcionário (tabela SALARIO). 
---O bônus é calculado conforme a seguinte fórmula: 
---bonus = lucro*0.01 + salario*0.05. 
+-- Execução:
+BEGIN
+  anos_bissextos;
+END;
+/
 
---Crie uma procedure que receba o ano (tabela LUCRO) e o número de matrícula do funcionário e devolva (imprima) o valor do seu respectivo bônus. Execute o script abaixo para criar as tabelas necessárias.
 
-CREATE TABLE LUCRO(
-ANO NUMBER(4) NOT NULL,
-VALOR NUMBER(10,2));
-INSERT INTO LUCRO VALUES (‘2017’, 1200000);
-INSERT INTO LUCRO VALUES (‘2018’, 1500000);
-INSERT INTO LUCRO VALUES (‘2019’, 1400000);
-INSERT INTO LUCRO VALUES (‘2020’, 1700000);
+-- Questão 4)
+CREATE OR REPLACE PROCEDURE inserir_aluno_com_resultado(
+  p_matricula IN NUMBER,
+  p_nome IN VARCHAR2,
+  p_a1 IN NUMBER,
+  p_a2 IN NUMBER,
+  p_a3 IN NUMBER,
+  p_a4 IN NUMBER
+)
+IS
+  v_media NUMBER(5,2);
+  v_resultado VARCHAR2(30);
+BEGIN
+  v_media := (p_a1 + p_a2 + p_a3 + p_a4) / 4;
 
-CREATE TABLE SALARIO (
-MATRICULA NUMBER(4) NOT NULL,
-SALARIO NUMBER(7,2) NOT NULL);
+  IF v_media >= 6 THEN
+    v_resultado := 'APROVADO';
+  ELSE
+    v_resultado := 'REPROVADO';
+  END IF;
 
-INSERT INTO SALARIO VALUES (1001, 2500); 
-INSERT INTO SALARIO VALUES (1002, 3500);
-INSERT INTO SALARIO VALUES (1003, 320);
-INSERT INTO SALARIO VALUES (1004, 2700);
-INSERT INTO SALARIO VALUES (1005, 4500);
+  INSERT INTO aluno (nr_matricula, nome, a1, a2, a3, a4, media, resultado)
+  VALUES (p_matricula, p_nome, p_a1, p_a2, p_a3, p_a4, v_media, v_resultado);
+  
+  DBMS_OUTPUT.PUT_LINE('Aluno inserido com média ' || v_media || ' e resultado: ' || v_resultado);
+END;
+/
+
+-- Execução:
+BEGIN
+  inserir_aluno_com_resultado(567, 'CARLA', 9, 8.5, 7, 10);
+END;
+/
+
+
+-- Questão 5)
+CREATE OR REPLACE PROCEDURE calcular_bonus(
+  p_ano IN NUMBER,
+  p_matricula IN NUMBER
+)
+IS
+  v_lucro LUCRO.VALOR%TYPE;
+  v_salario SALARIO.SALARIO%TYPE;
+  v_bonus NUMBER(10,2);
+BEGIN
+  SELECT valor INTO v_lucro
+  FROM lucro
+  WHERE ano = p_ano;
+
+  SELECT salario INTO v_salario
+  FROM salario
+  WHERE matricula = p_matricula;
+
+  v_bonus := v_lucro * 0.01 + v_salario * 0.05;
+
+  DBMS_OUTPUT.PUT_LINE('Bônus do funcionário ' || p_matricula || ' no ano ' || p_ano || ': R$ ' || v_bonus);
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    DBMS_OUTPUT.PUT_LINE('Dados não encontrados para o ano ou matrícula informada.');
+END;
+/
+
+-- Execução:
+BEGIN
+  calcular_bonus(2019, 1002);
+END;
+/

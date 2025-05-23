@@ -1,85 +1,133 @@
-﻿--Considere o schema Sales History (SH) 
---do Oracle. Crie as tabelas conforme comandos 
---abaixo e implemente as stored procedures 
---que são solicitadas a seguir:
+﻿--1) Procedure: ADD_CUSTOMER
 
---Comandos para criação de tabelas 
---do schema Order Entry (OE):
+CREATE OR REPLACE PROCEDURE add_customer (
+  p_cust_first_name      IN customers.cust_first_name%TYPE,
+  p_cust_last_name       IN customers.cust_last_name%TYPE,
+  p_cust_gender          IN customers.cust_gender%TYPE,
+  p_cust_email           IN customers.cust_email%TYPE,
+  p_cust_address         IN customers.cust_street_address%TYPE,
+  p_cust_postal_code     IN customers.cust_postal_code%TYPE,
+  p_cust_city            IN customers.cust_city%TYPE,
+  p_cust_city_id         IN customers.cust_city_id%TYPE,
+  p_cust_state_province  IN customers.cust_state_province%TYPE,
+  p_country_id           IN customers.country_id%TYPE
+) IS
+BEGIN
+  INSERT INTO customers (
+    cust_id, cust_first_name, cust_last_name, cust_gender,
+    cust_email, cust_street_address, cust_postal_code,
+    cust_city, cust_city_id, cust_state_province, country_id
+  )
+  VALUES (
+    customers_seq.NEXTVAL, p_cust_first_name, p_cust_last_name, p_cust_gender,
+    p_cust_email, p_cust_address, p_cust_postal_code,
+    p_cust_city, p_cust_city_id, p_cust_state_province, p_country_id
+  );
+  COMMIT;
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('Erro ao adicionar cliente: ' || SQLERRM);
+END;
+--🔧 Observação: Substitua customers_seq.NEXTVAL pelo nome correto da sequência usada na sua base (ou gere um cust_id manualmente, se necessário).
 
-create table customers as 
-select * from SH.customers 
-WHERE NUM_ROWS = 200;
+--2) Procedure: UPDATE_PRODUCT_STATUS
 
-create table produtos as
-select * from SH.products;
+CREATE OR REPLACE PROCEDURE update_product_status (
+  p_prod_id IN produtos.prod_id%TYPE,
+  p_status  IN VARCHAR2
+) IS
+BEGIN
+  UPDATE produtos
+  SET prod_status = p_status
+  WHERE prod_id = p_prod_id;
 
-create table countries as
-select * from SH.countries;
+  IF SQL%ROWCOUNT = 0 THEN
+    DBMS_OUTPUT.PUT_LINE('Produto não encontrado.');
+  ELSE
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Status atualizado com sucesso.');
+  END IF;
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('Erro: ' || SQLERRM);
+END;
 
---1) Procedure: Registrar Novo Cliente
---Descrição: Crie uma procedure 
---chamada ADD_CUSTOMER que receba 
---como parâmetros os campos 
---que são obrigatórios na tabela 
---e insira um novo cliente 
---na tabela CUSTOMERS.
+--3) Function: GET_CUSTOMER_NAME
 
---Objetivo: Praticar INSERT,
---parâmetros de entrada 
---e tratamento de erros.
+CREATE OR REPLACE FUNCTION get_customer_name (
+  p_customer_id IN customers.cust_id%TYPE
+) RETURN VARCHAR2 IS
+  v_nome customers.cust_first_name%TYPE;
+  v_sobrenome customers.cust_last_name%TYPE;
+BEGIN
+  SELECT cust_first_name, cust_last_name INTO v_nome, v_sobrenome
+  FROM customers
+  WHERE cust_id = p_customer_id;
 
---2) Procedure: Atualizar Status de Produto
---Descrição: Crie uma procedure 
---chamada UPDATE_PRODUCT_STATUS 
---que atualize o status de um produto 
---com base no seu PROD_ID. 
---Receba o novo status como parâmetro.
---O status pode ser: 
---Disponível ou Indisponível 
---ou Fora de produção.
+  RETURN v_nome || ' ' || v_sobrenome;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RETURN 'Cliente não encontrado';
+END;
 
---Objetivo: Praticar UPDATE, 
---uso de parâmetros e controle condicional.
+--4) Procedure: GET_CUSTOMER_PER_COUNTRY
 
---3) Function: Obter Nome Completo 
---do Cliente
---Descrição: Crie uma function chamada 
---GET_CUSTOMER_NAME que receba 
---um CUSTOMER_ID e retorne o nome completo 
---do cliente.
-
---Objetivo: Praticar uso simples 
---de SELECT INTO e retorno de VARCHAR.
-
---4) Procedure: Obter lista de clientes 
---de um país
---Descrição: Crie uma procedure chamada
--- GET_CUSTOMER_PER_COUNTRY que receba 
---um COUNTRY_ID e retorne uma lista 
---com o nome completo dos clientes, e-mail,
--- gênero e o endereço completo concatenando
--- os campos CUST_STREET_ADDRESS, 
---CUST_POSTAL_CODE, CUST_CITY, CUST_CITY_ID
--- e CUST_STATE_PROVINCE.
-
---Objetivo: Praticar uso de SELECT 
---com cursor e retorno de lista
---com funções internas do Oracle.
-
---5) Procedure: Obter relatório 
---de vendas por cliente em 
---determinado período.
---Descrição: Crie uma procedure 
---chamada SALES_REPORT que receba 
---como parâmetro um período de datas 
---(data de início e de fim) 
---e retorne uma lista com o nome completo 
---dos clientes e o total gasto por eles
--- neste período 
--- (somar os valores do campo AMOUNT_SOLD).
-
---Objetivo: Praticar uso de SELECT 
---com cursor e retorno de lista com funções 
---internas do Oracle.
+CREATE OR REPLACE PROCEDURE get_customer_per_country (
+  p_country_id IN countries.country_id%TYPE
+) IS
+BEGIN
+  FOR r IN (
+    SELECT 
+      cust_first_name || ' ' || cust_last_name AS nome_completo,
+      cust_email,
+      cust_gender,
+      cust_street_address || ', ' || cust_postal_code || ', ' ||
+      cust_city || ' (' || cust_city_id || '), ' || cust_state_province AS endereco
+    FROM customers
+    WHERE country_id = p_country_id
+  ) LOOP
+    DBMS_OUTPUT.PUT_LINE('Nome: ' || r.nome_completo);
+    DBMS_OUTPUT.PUT_LINE('E-mail: ' || r.cust_email);
+    DBMS_OUTPUT.PUT_LINE('Gênero: ' || r.cust_gender);
+    DBMS_OUTPUT.PUT_LINE('Endereço: ' || r.endereco);
+    DBMS_OUTPUT.PUT_LINE('-----------------------------');
+  END LOOP;
+END;
 
 
+--5) Procedure: SALES_REPORT
+
+CREATE OR REPLACE PROCEDURE sales_report (
+  p_data_inicio IN DATE,
+  p_data_fim    IN DATE
+) IS
+BEGIN
+  FOR r IN (
+    SELECT 
+      c.cust_first_name || ' ' || c.cust_last_name AS nome,
+      SUM(s.amount_sold) AS total_gasto
+    FROM sh.sales s
+    JOIN sh.customers c ON s.cust_id = c.cust_id
+    WHERE s.time_id BETWEEN p_data_inicio AND p_data_fim
+    GROUP BY c.cust_first_name, c.cust_last_name
+    ORDER BY total_gasto DESC
+  ) LOOP
+    DBMS_OUTPUT.PUT_LINE('Cliente: ' || r.nome || ' | Total Gasto: R$' || r.total_gasto);
+  END LOOP;
+END;
+
+
+
+
+
+
+
+
+
+
+
+Ferramentas
+
+
+
+O ChatGPT pode cometer erros. Considere verificar informações importantes.

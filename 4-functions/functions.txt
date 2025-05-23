@@ -1,55 +1,135 @@
-﻿--Parte I - Implemente o que se pede a seguir:
+﻿Parte I
+1. Função de conversão Fahrenheit → Celsius
+CREATE OR REPLACE FUNCTION fahrenheit_para_celsius (f NUMBER)
+RETURN NUMBER IS
+BEGIN
+  RETURN (f - 32) / 1.8;
+END;
 
---1.Criar uma função que deverá receber 
---um valor correspondente à temperatura 
---em graus Fahrenheit e retornar 
---o equivalente em graus Celsius. 
+2. Função para retornar nome e departamento pelo número de matrícula
+CREATE OR REPLACE FUNCTION obter_nome_departamento(matricula IN NUMBER)
+RETURN VARCHAR2 IS
+  v_nome funcionarios.first_name%TYPE;
+  v_sobrenome funcionarios.last_name%TYPE;
+  v_departamento departamentos.department_name%TYPE;
+BEGIN
+  SELECT f.first_name, f.last_name, d.department_name
+  INTO v_nome, v_sobrenome, v_departamento
+  FROM funcionarios f
+  JOIN departamentos d ON f.department_id = d.department_id
+  WHERE f.employee_id = matricula;
 
---A fórmula para conversão é: C = (F-32)/1.8
+  RETURN v_nome || ' ' || v_sobrenome || ' - ' || v_departamento;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RETURN 'Funcionário não encontrado';
+END;
 
---2.Criar uma função que deverá receber 
---o número de matrícula de um funcionário 
---e retornar seu nome e o nome de seu departamento. 
---Considere as tabelas employees e departments do esquema HR
- --do LiveSQL e faça uma cópia de cada uma delas 
- --para que você possa criar a sua função 
- --(conforme script abaixo).
- --Script :
---create table funcionarios as select * from hr.employees;
---create table departamentos as select * from hr.departments;
+Parte II
+1. Função para obter o nome completo
+CREATE OR REPLACE FUNCTION nome_completo(employee_id IN NUMBER)
+RETURN VARCHAR2 IS
+  v_nome funcionarios.first_name%TYPE;
+  v_sobrenome funcionarios.last_name%TYPE;
+BEGIN
+  SELECT first_name, last_name INTO v_nome, v_sobrenome
+  FROM funcionarios
+  WHERE employee_id = employee_id;
+
+  RETURN v_nome || ' ' || v_sobrenome;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RETURN 'Funcionário não encontrado';
+END;
+
+2. Função para obter salário
+CREATE OR REPLACE FUNCTION obter_salario(employee_id IN NUMBER)
+RETURN NUMBER IS
+  v_salario funcionarios.salary%TYPE;
+BEGIN
+  SELECT salary INTO v_salario
+  FROM funcionarios
+  WHERE employee_id = employee_id;
+
+  RETURN v_salario;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RETURN NULL;
+END;
 
 
---Parte II - Considere o schema HR do LiveSQL 
---para criar em seu schema uma cópia das tabelas employees 
---e departments. Em seu schema, crie os seguintes objetos:
+3. Função: nome dos funcionários + nome do departamento
+CREATE OR REPLACE FUNCTION nomes_por_departamento(dept_id IN NUMBER)
+RETURN CLOB IS
+  v_result CLOB := '';
+BEGIN
+  FOR r IN (
+    SELECT f.first_name || ' ' || f.last_name AS nome, d.department_name
+    FROM funcionarios f
+    JOIN departamentos d ON f.department_id = d.department_id
+    WHERE f.department_id = dept_id
+  ) LOOP
+    v_result := v_result || r.nome || ' - ' || r.department_name || CHR(10);
+  END LOOP;
 
---Criar:
---1.função para obter o nome completo do funcionário
--- (fisrt_name concatenado ao last_name) 
--- passando o employee_id como parâmetro da função;
+  IF v_result IS NULL THEN
+    RETURN 'Nenhum funcionário encontrado.';
+  END IF;
 
---2.função para obter o salário do funcionário 
---passando o employee_id como parâmetro da função;
+  RETURN v_result;
+END;
 
---3.função para obter o nome completo do funcionário 
---que trabalha em um determinado departamento.
--- Mostre também o nome deste departamento. 
--- Passe o department_id como parâmetro.
 
---4.função para obter o valor total da folha de pagamento
--- (soma de salários) dos funcionários da empresa.
+4. Função para retornar total da folha de pagamento
+CREATE OR REPLACE FUNCTION total_folha
+RETURN NUMBER IS
+  v_total NUMBER;
+BEGIN
+  SELECT SUM(salary) INTO v_total FROM funcionarios;
+  RETURN v_total;
+END;
 
---5.função que aplique um aumento de 10% 
---no salário dos funcionários de um determinado 
---departamento e retorne como resultado da função 
--- o novo total de salário deste departamento. 
--- Passe o department_id como parâmetro.
 
---6.procedimento que imprima uma listagem 
---dos funcionários com os seguintes dados:
---nome completo do funcionário, data de contratação (hire_date), 
---número de telefone, e-mail, nome do gerente, 
---nome do departamento, salário e percentual de comissão.
+5. Função para aplicar aumento de 10% e retornar novo total
+CREATE OR REPLACE FUNCTION aplicar_aumento(dept_id IN NUMBER)
+RETURN NUMBER IS
+  v_total NUMBER := 0;
+BEGIN
+  UPDATE funcionarios
+  SET salary = salary * 1.10
+  WHERE department_id = dept_id;
 
---Dica: você precisará fazer uma junção da tabela 
---funcionarios com ela mesma para obter o nome do gerente.
+  SELECT SUM(salary) INTO v_total
+  FROM funcionarios
+  WHERE department_id = dept_id;
+
+  RETURN v_total;
+END;
+
+
+6. Procedure: Listagem dos funcionários
+CREATE OR REPLACE PROCEDURE listar_funcionarios IS
+BEGIN
+  FOR r IN (
+    SELECT f.first_name || ' ' || f.last_name AS nome,
+           f.hire_date,
+           f.phone_number,
+           f.email,
+           (SELECT m.first_name || ' ' || m.last_name
+            FROM funcionarios m
+            WHERE m.employee_id = f.manager_id) AS gerente,
+           d.department_name,
+           f.salary,
+           f.commission_pct
+    FROM funcionarios f
+    LEFT JOIN departamentos d ON f.department_id = d.department_id
+  ) LOOP
+    DBMS_OUTPUT.PUT_LINE(
+      'Nome: ' || r.nome || ', Data Contratação: ' || r.hire_date ||
+      ', Telefone: ' || r.phone_number || ', E-mail: ' || r.email ||
+      ', Gerente: ' || NVL(r.gerente, 'Sem gerente') || 
+      ', Departamento: ' || r.department_name || ', Salário: ' || r.salary ||
+      ', Comissão: ' || NVL(TO_CHAR(r.commission_pct), '0')
+    );
+  END LOOP;
+END;

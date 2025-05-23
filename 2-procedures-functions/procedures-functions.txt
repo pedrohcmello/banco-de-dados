@@ -1,108 +1,61 @@
 ﻿--PROBLEMA 1
---1) Executar o comando abaixo e explicar o que ele faz:
 DECLARE
    a number;
    b number;
-   c number;
+   maximo number;
+   media number;
 
-PROCEDURE valorMinimo(x IN number, y IN number, z OUT number) IS
-BEGIN
-   IF x < y THEN
-      z:= x;
-   ELSE
-      z:= y;
-   END IF;
-END;
+   PROCEDURE valorMaximo(x IN number, y IN number, z OUT number) IS
+   BEGIN
+      IF x > y THEN
+         z := x;
+      ELSE
+         z := y;
+      END IF;
+   END;
 
-BEGIN
-   a:= 23;
-   b:= 45;
-   valorMinimo(a, b, c);
-   dbms_output.put_line('O valor mínimo obtido entre os valores ' || a  || ' e ' || b || ' foi ' || c);
-END;
-
-
-Resposta : 
-
-
-
---2) Você conseguiria fazer um comando semelhante, 
---mas agora para identificar o valor máximo 
---e o valor médio?
-
-Maior : 
+   PROCEDURE valorMedio(x IN number, y IN number, z OUT number) IS
+   BEGIN
+      z := (x + y) / 2;
+   END;
 
 BEGIN
-  
+   a := 23;
+   b := 45;
+
+   valorMaximo(a, b, maximo);
+   valorMedio(a, b, media);
+
+   dbms_output.put_line('O valor máximo entre ' || a || ' e ' || b || ' é: ' || maximo);
+   dbms_output.put_line('A média entre ' || a || ' e ' || b || ' é: ' || media);
 END;
 
-Médio (caso se refira a um valor médio)
 
-A montagem da PROCEDURE precisaria incluir 4 parâmetros em vez de 3.
-Valor médio nesse sentido é o valor distinto do máximo e mínimo, o qual está numericamente entre ambos.
-BEGIN
-   
-END;
 
 --PROBLEMA 2
---1) Criar a seguinte tabela:
-CREATE TABLE CIDADES
-(
-  COD_CIDADE  INTEGER NOT NULL,
-  NOME        VARCHAR2(100 BYTE),
-  UF          CHAR(2 BYTE)
-);
-
---2) Executar o comando abaixo:
-CREATE OR REPLACE PROCEDURE "SP_CIDADES" (
-	vCOD_CIDADE  INTEGER,
-	vNOME       VARCHAR2,
-	vUF         CHAR,
-	vOPR        CHAR)
-IS
-	vEXCEPTION EXCEPTION;
-BEGIN
-  IF (vOPR = 'I') THEN
-	INSERT INTO CIDADES(COD_CIDADE, NOME, UF)
-	VALUES (vCOD_CIDADE, vNOME, vUF);
-  ELSE
-
-  IF(vOPR = 'A') THEN
-    UPDATE CIDADES
-    SET NOME = vNOME, UF = vUF WHERE COD_CIDADE = vCOD_CIDADE;
-  
-  ELSE
-    IF(vOPR = 'D')THEN
-      DELETE FROM CIDADES WHERE COD_CIDADE = vCOD_CIDADE;
-    ELSE
-      RAISE vEXCEPTION;
-    END IF;
-  END IF;
-END IF;
-EXCEPTION
-  WHEN vEXCEPTION THEN
-   RAISE_APPLICATION_ERROR(-20999,'ATENÇÃO! Operação diferente de Inserçao, Deleção ou Atualização.', FALSE);
-END SP_CIDADES;
-
---3) Para observar os resultados, 
---execute o comando abaixo:
 EXEC SP_CIDADES(1, ‘GASPAR’, ‘SC’, ‘I’);
+--RESPOSTA : 
+-- Resultado: Erro de tipo. 
+--Vai retornar algo como ORA-06550, 
+--porque o primeiro parâmetro deveria 
+--ser um número (INTEGER), e passamos uma string.
 
-
-Parece que a versão atual do live oracle sql exige 
-uma sintaxe diferente para o delimitador ‘ , 
-em um parâmetro de uma procedure em um comando EXEC .
+-- Correto : EXEC SP_CIDADES('um', 'GASPAR', 'SC', 'I');
 
 --4) Tente executar o mesmo comando anterior sem informar
  --algum dado ou informando tipos de dados diferentes. 
  --Relate o que acontece.
 
+--Resposta : 
+--EXEC SP_CIDADES(2, 'FLORIANÓPOLIS', 'SC', 'X');
+-- Resultado: ORA-20999: ATENÇÃO! Operação diferente de Inserção, Deleção ou Atualização.
+--Ou seja, o sistema identificou 
+--que o tipo de operação não é válido 
+--e lançou uma exceção personalizada.
+
 
 --PROBLEMA 3
---1) Criar a seguinte tabela e explicar o que aconteceu:
 create table funcionarios as select * from hr.employees;
-
---2) Executar o comando abaixo:
 
 CREATE OR REPLACE PROCEDURE detalhes_dos_funcionarios
 IS
@@ -119,15 +72,8 @@ BEGIN
 END;
 
 
-
-
---3) Para observar os resultados, execute o comando abaixo e explique o que o comando fez:
-exec detalhes_dos_funcionarios;
-
-ERRO : 
-
 --PROBLEMA 4
---1) Executar o comando abaixo:
+
 CREATE OR REPLACE FUNCTION PRIMO (NUMERO NUMBER) 
 RETURN VARCHAR2
 IS
@@ -147,16 +93,25 @@ BEGIN
       RETURN VRESULT;
 END;
 
---2) Para observar os resultados, 
---execute o comando abaixo e explique o que o comando fez:
 BEGIN
   DBMS_OUTPUT.PUT_LINE(PRIMO(4));
 END;
 
+--RESPOSTA : 
+--Resultado: NÃO É PRIMO
+
 
 --3) Consegue perceber a diferença do tipo de comando deste problema se comparado aos problemas 2 e 3? Explique. 
-Diferença : Na questão 3, era uma PROCEDURE que retorna dados, e não necessita de parâmetros. Enquanto na questão 2 era uma PROCEDURE que necessita de parâmetros e retorna um valor.
+-- Resposta : 3) Diferença de tipo de comando
+--A principal diferença aqui é que 
+--no problema 4 foi usada uma função, 
+--enquanto nos problemas anteriores foram usadas procedures. 
+--A função é diferente porque ela retorna 
+--um valor diretamente (com RETURN), 
+--enquanto a procedure executa ações 
+--e pode ter parâmetros de saída, 
+--mas não retorna valores diretamente.
 
 
 
-Tive uma leve dificuldade em entender essa questão. 
+

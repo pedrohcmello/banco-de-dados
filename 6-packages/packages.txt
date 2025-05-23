@@ -1,112 +1,124 @@
-﻿--Módulo 02 - Atividade 6 - 
---Uso de packages PL/SQL
+﻿--🔧 Etapa 1: Criar cópia das tabelas do HR
 
---Bom trabalho!
+CREATE TABLE funcionarios AS SELECT * FROM hr.employees;
+CREATE TABLE departamentos AS SELECT * FROM hr.departments;
 
---1. Assinale V para Verdadeiro e F para Falso nas seguintes afirmativas:
+--📦 Etapa 2: Criar o pacote pckFuncionarios
+--Especificação (spec)
 
---( ) Um package pode ter duas partes sendo
--- uma delas para declaração de variáveis, 
--- constantes, exceções, cursores 
--- e subprogramas (funções e procedimentos) 
--- e a outra parte para definição 
--- dos subprogramas.
+CREATE OR REPLACE PACKAGE pckFuncionarios IS
+  FUNCTION obter_nome_funcionario(p_employee_id IN funcionarios.employee_id%TYPE) 
+    RETURN VARCHAR2;
 
---( ) Um package pode ser usado por muitas
--- aplicações.
+  FUNCTION obter_salario(p_employee_id IN funcionarios.employee_id%TYPE) 
+    RETURN funcionarios.salary%TYPE;
 
---( ) A spec de um package é pública 
---sendo acessível pelas aplicações.
+  PROCEDURE funcionarios_por_departamento(p_department_id IN departamentos.department_id%TYPE);
 
---( ) Não podemos ter variáveis globais 
---em um package, somente variáveis de uso 
---local.
+  FUNCTION total_folha_pagamento RETURN NUMBER;
 
---( ) Em um schema de banco de dados Oracle,
--- é possível definir quantos packages 
---forem necessários.
+  PROCEDURE aplicar_aumento_salario(p_department_id IN departamentos.department_id%TYPE);
 
---( ) Com os packages, podemos especificar
--- quais tipos, itens e sub-programas 
---serão públicos (visíveis e acessíveis) 
---ou privados (escondido e inacessível).
+  PROCEDURE listar_funcionarios;
+END pckFuncionarios;
+Corpo (body)
 
---( ) A especificação do package 
---comporta-se como uma API.
+CREATE OR REPLACE PACKAGE BODY pckFuncionarios IS
 
---2. Quais itens públicos necessitam 
---ser registrados no corpo do pacote? 
---Assinale a afirmativa correta:
+  -- Função: Nome completo do funcionário
+  FUNCTION obter_nome_funcionario(p_employee_id IN funcionarios.employee_id%TYPE) 
+    RETURN VARCHAR2 IS
+    v_nome funcionarios.first_name%TYPE;
+    v_sobrenome funcionarios.last_name%TYPE;
+  BEGIN
+    SELECT first_name, last_name INTO v_nome, v_sobrenome
+    FROM funcionarios
+    WHERE employee_id = p_employee_id;
+    
+    RETURN v_nome || ' ' || v_sobrenome;
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      RETURN 'Funcionário não encontrado';
+  END;
 
---.Procedures e functions
---.Procedures, functions e exceções
---.Procedures, functions e constantes
+  -- Função: Salário do funcionário
+  FUNCTION obter_salario(p_employee_id IN funcionarios.employee_id%TYPE) 
+    RETURN funcionarios.salary%TYPE IS
+    v_salario funcionarios.salary%TYPE;
+  BEGIN
+    SELECT salary INTO v_salario
+    FROM funcionarios
+    WHERE employee_id = p_employee_id;
+    
+    RETURN v_salario;
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      RETURN NULL;
+  END;
 
---3. Referente ao cabeçalho e ao corpo 
---do pacote, selecione a alternativa 
---correta:
+  -- Procedimento: Funcionários por departamento
+  PROCEDURE funcionarios_por_departamento(p_department_id IN departamentos.department_id%TYPE) IS
+  BEGIN
+    FOR r IN (
+      SELECT 
+        f.first_name || ' ' || f.last_name AS nome_funcionario,
+        d.department_name AS nome_departamento
+      FROM funcionarios f
+      JOIN departamentos d ON f.department_id = d.department_id
+      WHERE f.department_id = p_department_id
+    ) LOOP
+      DBMS_OUTPUT.PUT_LINE('Funcionário: ' || r.nome_funcionario);
+      DBMS_OUTPUT.PUT_LINE('Departamento: ' || r.nome_departamento);
+      DBMS_OUTPUT.PUT_LINE('-----------------------------');
+    END LOOP;
+  END;
 
---Quando atualizamos um dado no corpo
---do pacote, precisamos refazer 
---a declaração do cabeçalho.
+  -- Função: Total da folha de pagamento
+  FUNCTION total_folha_pagamento RETURN NUMBER IS
+    v_total NUMBER;
+  BEGIN
+    SELECT SUM(salary) INTO v_total FROM funcionarios;
+    RETURN v_total;
+  END;
 
---Depois de criado, não podemos alterar
---o corpo e o cabeçalho do pacote.
---Quando atualizamos um dado no corpo, 
---não precisamos refazer a declaração 
---do cabeçalho, pois o corpo pode ser 
---modificado sem a necessidade de mudar
---o código do cabeçalho.
+  -- Procedimento: Aumentar salário em 10% no departamento
+  PROCEDURE aplicar_aumento_salario(p_department_id IN departamentos.department_id%TYPE) IS
+  BEGIN
+    UPDATE funcionarios
+    SET salary = salary * 1.10
+    WHERE department_id = p_department_id;
 
---4. Considere o schema HR do LiveSQL
--- para criar em seu schema uma 
---cópia das tabelas employees e departments.
--- Em seu schema, estas tabelas deverão 
---se chamar funcionarios e departamentos.
--- Em seu schema, crie os seguintes objetos:
+    DBMS_OUTPUT.PUT_LINE(SQL%ROWCOUNT || ' funcionário(s) tiveram aumento.');
+    COMMIT;
+  END;
 
---Pacote com interface (spec) e body 
---que seja denominado pckFuncionarios;
+  -- Procedimento: Listagem de funcionários completa
+  PROCEDURE listar_funcionarios IS
+  BEGIN
+    FOR r IN (
+      SELECT 
+        f.first_name || ' ' || f.last_name AS nome_funcionario,
+        f.hire_date,
+        f.phone_number,
+        f.email,
+        NVL(m.first_name || ' ' || m.last_name, 'Sem gerente') AS nome_gerente,
+        d.department_name,
+        f.salary,
+        NVL(f.commission_pct, 0) AS comissao
+      FROM funcionarios f
+      LEFT JOIN funcionarios m ON f.manager_id = m.employee_id
+      LEFT JOIN departamentos d ON f.department_id = d.department_id
+    ) LOOP
+      DBMS_OUTPUT.PUT_LINE('Nome: ' || r.nome_funcionario);
+      DBMS_OUTPUT.PUT_LINE('Contratação: ' || r.hire_date);
+      DBMS_OUTPUT.PUT_LINE('Telefone: ' || r.phone_number);
+      DBMS_OUTPUT.PUT_LINE('Email: ' || r.email);
+      DBMS_OUTPUT.PUT_LINE('Gerente: ' || r.nome_gerente);
+      DBMS_OUTPUT.PUT_LINE('Departamento: ' || r.department_name);
+      DBMS_OUTPUT.PUT_LINE('Salário: R$' || r.salary);
+      DBMS_OUTPUT.PUT_LINE('Comissão: ' || r.comissao);
+      DBMS_OUTPUT.PUT_LINE('-----------------------------');
+    END LOOP;
+  END;
 
---No pacote criado, defina as seguintes
---funções ou procedimentos:
-
---função para obter o nome completo 
---do funcionário (fisrt_name concatenado 
---ao last_name) passando o employee_id 
---como parâmetro da função;
-
---função para obter o salário do 
---funcionário passando o employee_id 
---como parâmetro da função;
-
---procedimento para obter o nome completo
---do funcionário que trabalha em um 
---determinado departamento. 
---Mostre também o nome deste departamento.
---Passe o department_id como parâmetro.
-
---função para obter o valor total da folha
---de pagamento (soma de salários) 
---dos funcionários da empresa.
-
---procedimento que aplique um aumento
--- de 10% no salário dos funcionários 
---de um determinado departamento. 
---Passe o department_id como parâmetro.
-
---procedimento que imprima uma listagem 
---dos funcionários com os seguintes dados: 
---nome completo do funcionário, 
---data de contratação (hire_date), 
---número de telefone, e-mail, 
---nome do gerente, nome do departamento, 
---salário e percentual de comissão. 
-
---Dica: você precisará fazer uma 
---junção da tabela funcionarios com
--- ela mesma para obter o nome do gerente.
-
---Respostas da questão 4 
---(cole aqui os comandos que você
--- executou no LiveSQL):
+END pckFuncionarios;
