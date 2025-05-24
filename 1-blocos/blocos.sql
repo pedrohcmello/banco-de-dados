@@ -15,6 +15,8 @@ ELSIF v_num > 0 THEN
 ELSE
     DBMS_OUTPUT.PUT_LINE('O número é menor que zero.');
 END IF;
+--END  também ?
+
 
 -- Questão 3
 
